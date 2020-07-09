@@ -1,0 +1,33 @@
+#version 430
+
+const int verticesPerParticle = 8;
+
+uniform int n_active_particles;
+
+struct Particle{
+    vec4 position;
+    int vertexIndices[verticesPerParticle];
+    vec4 velocity;
+    vec4 quaternion;
+    vec4 rotAxis;
+    vec4 origin;
+    float seed;
+    float current_frame;
+};
+
+layout(std430, binding = 5) buffer particle_data{
+    Particle particles[ ]; 
+};
+
+vec3 getRotationAxis(uint seed){
+    return normalize(vec3(seed % 2731, seed % 3359, seed % 9157));
+}
+
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+void main(){
+    uint globalID = gl_GlobalInvocationID.x;
+    if(globalID < n_active_particles){
+        float r = length(particles[globalID].origin.xyz);
+        // particles[globalID].velocity.xyz = r * -sin(particles[globalID].current_frame) * normalize(particles[globalID].rotAxis.xyz) + r * cos(particles[globalID].current_frame) * normalize(particles[globalID].origin.xyz);
+    }
+}

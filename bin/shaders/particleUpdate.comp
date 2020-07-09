@@ -1,0 +1,48 @@
+#version 430
+
+const int verticesPerParticle = 8;
+
+struct Particle{
+    vec4 position;
+    int vertexIndices[verticesPerParticle];
+    vec4 velocity;
+    vec4 quaternion;
+    vec4 rotAxis;
+    vec4 origin;
+    float seed;
+    float current_frame;
+};
+
+uniform float deltaTime;
+uniform int n_active_particles;
+
+layout(std430, binding = 5) buffer particle_data{
+    Particle particles[ ]; 
+};
+
+layout(std430, binding = 6) buffer vertex_data{
+    vec4 vertices[ ]; 
+};
+
+void updatePosition(uint globalID){
+    // particles[globalID].position.xyz += particles[globalID].velocity.xyz * deltaTime;
+    float r = length(particles[globalID].origin.xyz);
+    vec3 new_pos = r * cos(particles[globalID].current_frame * 100) * normalize(particles[globalID].rotAxis.xyz) + r * sin(particles[globalID].current_frame * 100) * normalize(particles[globalID].origin.xyz);
+    particles[globalID].velocity.xyz = new_pos - particles[globalID].position.xyz;
+    particles[globalID].position.xyz += particles[globalID].velocity.xyz;
+    for(int i=0;i<verticesPerParticle;i++){
+        // vertices[particles[globalID].vertexIndices[i]].xyz += difference;
+        vertices[particles[globalID].vertexIndices[i]].xyz += particles[globalID].velocity.xyz;
+        float r_vert = length(vertices[particles[globalID].vertexIndices[i]].xyz);
+        // vertices[particles[globalID].vertexIndices[i]].xyz =  r_vert  * normalize(particles[globalID].origin.xyz);
+    }
+}
+
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+void main(){
+    uint globalID = gl_GlobalInvocationID.x;
+    if(globalID < n_active_particles){
+        updatePosition(globalID);
+    }
+    particles[globalID].current_frame = mod(particles[globalID].current_frame + deltaTime * 0.01 * (particles[globalID].seed + 0.5), 12.5663706144);
+}
