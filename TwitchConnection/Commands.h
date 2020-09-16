@@ -3,7 +3,8 @@
 #include <string>
 #include <unordered_map>
 #include <stdexcept>
-#include "TwitchStructs.hpp"
+#include "Follower.hpp"
+#include "EventQueue.h"
 
 struct Command{
     std::string user = "";
@@ -18,7 +19,7 @@ typedef std::unordered_map<std::string, Follower*> followerDict;
 class Commands{
 public:
     static int changeColor(Command com, std::string &err);
-    static updateEvent* update;
+    static EventQueue* eventQueue;
     static followerDict* followers;
     static commandMap Map;
 };

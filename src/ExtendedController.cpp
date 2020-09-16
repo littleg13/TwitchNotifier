@@ -3,6 +3,10 @@
 #include "ExtendedController.h"
 #include "ModelView.h"
 
+ChatBot* ExtendedController::chatBot = nullptr;
+NotifyServer* ExtendedController::notifyServer = nullptr;
+SoundController* ExtendedController::soundController = nullptr;
+
 ExtendedController::ExtendedController(const std::string& name, int rcFlags):
 	GLFWController(name, rcFlags)
 {
@@ -11,6 +15,7 @@ ExtendedController::ExtendedController(const std::string& name, int rcFlags):
 
 ExtendedController::~ExtendedController(){
 	delete followers;
+	delete eventQueue;
 }
 
 void ExtendedController::handleMouseMotion(int x, int y)
@@ -56,23 +61,30 @@ void ExtendedController::handleDisplay()
 }
 
 void ExtendedController::notifyOnUpdate(){
-	if(update->action != updateEvent::ACTION::NONE){
-		if(update->action == updateEvent::ACTION::NEW_FOLLOWER){
-			updateFollowers((*(update->info))["data"].array_items());
+	if(!eventQueue->isEmpty()){
+		updateEvent* event = eventQueue->pop();
+		if(event->action == updateEvent::ACTION::NEW_FOLLOWER){
+			updateFollowers((*(event->info))["data"].array_items());
 		}
 		for (std::vector<ModelView*>::iterator it=models.begin() ; it<models.end() ; it++)
-			(*it)->handleUpdate(reinterpret_cast<void*>(update));
-		update->reset();
+			(*it)->handleUpdate(reinterpret_cast<void*>(event));
+
+		chatBot->processEvent(event);
+		soundController->processEvent(event);
+		soundController->cleanupSoundThreads();
+		delete event;
 		writeFollowersToFile();
 	}
 }
 
-void ExtendedController::startTwitchServer(updateEvent* update){
-    NotifyServer* server = new NotifyServer(update);
+void ExtendedController::startTwitchServer(EventQueue* eventQueue){
+    notifyServer = new NotifyServer(eventQueue);
+	notifyServer->run();
 }
 
-void ExtendedController::startChatServer(updateEvent* update, followerDict* followers){
-	ChatBot* chatBot = new ChatBot(update, followers);
+void ExtendedController::startChatServer(EventQueue* eventQueue, followerDict* followers){
+	chatBot = new ChatBot(eventQueue, followers);
+	chatBot->runWebSocket();
 }
 
 void ExtendedController::writeFollowersToFile(){
@@ -118,14 +130,15 @@ void ExtendedController::readFollowersFromFile(){
 }
 
 void ExtendedController::enableTwitch(){
-	update = new updateEvent();
+	eventQueue = new EventQueue();
+	soundController = new SoundController();
     con = new TwitchConnection();
     con->getOauthToken();
-    twitchThread = new std::thread(ExtendedController::startTwitchServer, update);
+    twitchThread = new std::thread(ExtendedController::startTwitchServer, eventQueue);
+	chatThread = new std::thread(ExtendedController::startChatServer, eventQueue, followers);
 	readFollowersFromFile();
     con->subscribeToFollower();
 	updateFollowers(con->getFollowers());
-	chatThread = new std::thread(ExtendedController::startChatServer, update, followers);
 	
 }
 

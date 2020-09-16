@@ -8,6 +8,7 @@
 #include "NotifyServer.h"
 #include "TwitchConnection.h"
 #include "ChatBot.h"
+#include "Sound/SoundController.h"
 
 #include <fstream>
 
@@ -19,10 +20,13 @@ class ExtendedController : public GLFWController
 protected:
 	void handleMouseMotion(int x, int y);
 	void handleDisplay();
-	static void startTwitchServer(updateEvent* update);
-	static void startChatServer(updateEvent* update, followerDict* followers);
+	static void startTwitchServer(EventQueue* eventQueue);
+	static void startChatServer(EventQueue* eventQueue, followerDict* followers);
+	static ChatBot* chatBot;
+	static NotifyServer* notifyServer;
+	static SoundController* soundController;
 	void notifyOnUpdate();
-	updateEvent* update;
+	EventQueue* eventQueue;
 	std::thread* twitchThread;
 	std::thread* chatThread;
 	TwitchConnection* con;

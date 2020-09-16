@@ -2,7 +2,7 @@ CPP = cl.exe /Zi /EHsc
 INC = -I../include
 C_FLAGS = -c /EHsc /Zi $(INC)
 LINK = lib.exe
-OBJS = TwitchConnection.obj json11.obj NotifyServer.obj HTTP.obj ChatBot.obj Commands.obj
+OBJS = TwitchConnection.obj json11.obj NotifyServer.obj HTTP.obj ChatBot.obj Commands.obj EventQueue.obj
 LOCAL_UTIL_LIBRARIES = crypt32.lib Rpcrt4.lib Advapi32.lib Ole32.lib User32.lib ../lib/libsslMT.lib ../lib/libcryptoMT.lib Ws2_32.lib 
 
 libTwitch.lib: $(OBJS) 
@@ -20,3 +20,10 @@ Commands.obj: Commands.cpp Commands.h
 	$(CPP) $(C_FLAGS) Commands.cpp
 json11.obj: json11.cpp
 	$(CPP) $(C_FLAGS) json11.cpp
+EventQueue.obj: EventQueue.cpp
+	$(CPP) $(C_FLAGS) EventQueue.cpp
+
+clean:
+	del *.obj
+	del libTwitch.lib
+	del ..\lib\libTwitch.lib

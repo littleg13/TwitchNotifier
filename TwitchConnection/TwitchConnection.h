@@ -9,7 +9,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include "HTTP.h"
-#include "TwitchStructs.hpp"
+#include "Follower.hpp"
 #include <vector>
 
 #include <fstream>

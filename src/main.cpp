@@ -61,6 +61,7 @@ void set3DViewingInformation(double overallBB[])
 
 int main(int argc, char* argv[])
 {
+	CoInitialize(NULL);
 	ExtendedController c("Twitch Notifier", MVC_USE_DEPTH_BIT);
 	c.reportVersions(std::cout);
 	c.enableTwitch();
@@ -86,7 +87,6 @@ int main(int argc, char* argv[])
 	ShaderIF* physicsUpdatesIF = new ShaderIF(physicsUpdateShaders, 1);
 
 	createScene(c, particlesIF, particleUpdatesIF, physicsUpdatesIF);
-
 
 	double xyz[6];
 	c.getOverallMCBoundingBox(xyz);

@@ -5,7 +5,7 @@ commandMap Commands::Map {
         {"color", changeColor}
     };
 
-updateEvent* Commands::update = nullptr;
+EventQueue* Commands::eventQueue = nullptr;
 followerDict* Commands::followers = nullptr;
 
 
@@ -50,10 +50,12 @@ int Commands::changeColor(Command com, std::string &err){
             (*followers)[com.user]->color[i] = color[i];
             (*followers)[com.user]->hasColor = true;
         }
-        update->info = new json11::Json(
+        updateEvent* event = new updateEvent();
+        event->info = new json11::Json(
             json11::Json::object({{"user", com.user}})
         );
-        update->action = updateEvent::ACTION::CHANGE_COLOR;
+        event->action = updateEvent::ACTION::CHANGE_COLOR;
+        eventQueue->push(event);
     }
     else{
         err = "Supply a color in the form of !color R G B\r\n0 < R,G,B < 1";

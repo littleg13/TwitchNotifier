@@ -2,11 +2,18 @@
 #include <random>
 
 
-ChatBot::ChatBot(updateEvent* update, followerDict* followers): toUpdate(update){
-    Commands::update = update;
+ChatBot::ChatBot(EventQueue* p_eventQueue, followerDict* followers): eventQueue(p_eventQueue){
     Commands::followers = followers;
     connectSocket();
-    runWebSocket();
+}
+
+void ChatBot::processEvent(updateEvent* event){
+    if(event->action == updateEvent::ACTION::NEW_FOLLOWER){
+        std::string followMSG = "Thank you for following @" + (*(event->info))["data"][0]["from_name"].string_value();
+        std::cout << (*(event->info)).dump() << std::endl;
+        followMSG += "\nUse !color to change the color of your cube.";
+        sendPrivMsg(followMSG);
+    }
 }
 
 void ChatBot::runWebSocket(){

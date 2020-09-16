@@ -70,7 +70,7 @@ std::string TwitchConnection::getAuthToken(){
 
 void TwitchConnection::subscribeToFollower(){
     std::string* params = new std::string[4];
-    params[0] = "hub.callback=http://66.45.159.19:3000"; //So not my IP
+    params[0] = "hub.callback=http://minecraft.goopy.us:3000"; //So not my IP
     params[1] = "hub.mode=subscribe";
     params[2] = "hub.topic=https://api.twitch.tv/helix/users/follows?first=1%26to_id=45893043";
     params[3] = "hub.lease_seconds=864000";

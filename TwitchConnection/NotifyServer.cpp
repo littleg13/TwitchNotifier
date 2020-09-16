@@ -1,37 +1,40 @@
 #include "NotifyServer.h"
 
 
-NotifyServer::NotifyServer(updateEvent* update): toUpdate(update){
-    int result;
+NotifyServer::NotifyServer(EventQueue* p_eventQueue): eventQueue(p_eventQueue){
+    initSocket();
+    acceptChallenge();
+}
 
-    listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (listenSocket == INVALID_SOCKET) {
-        printf("Socket failed with error: %ld\n", WSAGetLastError());
-        WSACleanup();
-        return;
+void NotifyServer::run(){
+    HTTPResponse* response;
+    while(1){
+        clientSocket = accept(listenSocket, NULL, NULL);
+        if (clientSocket == INVALID_SOCKET) {
+            printf("accept failed with error: %d\n", WSAGetLastError());
+            closesocket(listenSocket);
+            WSACleanup();
+            return;
+        }
+        if((response = HTTP::http_recv(clientSocket)) != nullptr){
+            if(response->type == HTTPResponse::HTTP_TYPE::POST){
+                HTTP::http_response(clientSocket, HTTPResponse::STATUS_CODES::OK, "OK", nullptr, 0, "");
+                updateEvent* event = new updateEvent();
+                event->action = updateEvent::ACTION::NEW_FOLLOWER;
+                event->info = &response->jsonContent;
+                eventQueue->push(event);
+            }
+        }
+        result = shutdown(clientSocket, SD_SEND);
+        if (result == SOCKET_ERROR) {
+            printf("shutdown failed: %d\n", WSAGetLastError());
+        }
+        closesocket(clientSocket);
+        clientSocket = INVALID_SOCKET;
     }
+}
 
-    addrinfo hints;
-    memset(&hints, 0, sizeof(hints));;
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    result = getaddrinfo("0.0.0.0", LISTEN_PORT, &hints, &addrInfo);
-    if ( result != 0 ) {
-        printf("getaddrinfo failed with error: %d\n", result);
-        WSACleanup();
-        return;
-    }
-
-    result = bind(listenSocket, addrInfo->ai_addr, (int)addrInfo->ai_addrlen);
-    if(result == SOCKET_ERROR){
-        printf(("Failed to bind: Error " + std::to_string(WSAGetLastError()) + "\n").c_str());
-        closesocket(listenSocket);
-        listenSocket = INVALID_SOCKET;
-        WSACleanup();
-        return;
-    }
-
+void NotifyServer::acceptChallenge(){
     result = listen(listenSocket, SOMAXCONN);
     if(result == SOCKET_ERROR){
         printf("listen failed with error: %d\n", WSAGetLastError());
@@ -59,27 +62,34 @@ NotifyServer::NotifyServer(updateEvent* update): toUpdate(update){
     }
     closesocket(clientSocket);
     clientSocket = INVALID_SOCKET;
-    while(1){
-        clientSocket = accept(listenSocket, NULL, NULL);
-        if (clientSocket == INVALID_SOCKET) {
-            printf("accept failed with error: %d\n", WSAGetLastError());
-            closesocket(listenSocket);
-            WSACleanup();
-            return;
-        }
-        fflush(stdout);
-        if((response = HTTP::http_recv(clientSocket)) != nullptr){
-            if(response->type == HTTPResponse::HTTP_TYPE::POST){
-                HTTP::http_response(clientSocket, HTTPResponse::STATUS_CODES::OK, "OK", nullptr, 0, "");
-                toUpdate->action = updateEvent::ACTION::NEW_FOLLOWER;
-                toUpdate->info = &response->jsonContent;
-            }
-        }
-        result = shutdown(clientSocket, SD_SEND);
-        if (result == SOCKET_ERROR) {
-            printf("shutdown failed: %d\n", WSAGetLastError());
-        }
-        closesocket(clientSocket);
-        clientSocket = INVALID_SOCKET;
+}
+
+void NotifyServer::initSocket(){
+    listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (listenSocket == INVALID_SOCKET) {
+        printf("Socket failed with error: %ld\n", WSAGetLastError());
+        WSACleanup();
+        return;
+    }
+
+    addrinfo hints;
+    memset(&hints, 0, sizeof(hints));;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    result = getaddrinfo("0.0.0.0", LISTEN_PORT, &hints, &addrInfo);
+    if ( result != 0 ) {
+        printf("getaddrinfo failed with error: %d\n", result);
+        WSACleanup();
+        return;
+    }
+
+    result = bind(listenSocket, addrInfo->ai_addr, (int)addrInfo->ai_addrlen);
+    if(result == SOCKET_ERROR){
+        printf(("Failed to bind: Error " + std::to_string(WSAGetLastError()) + "\n").c_str());
+        closesocket(listenSocket);
+        listenSocket = INVALID_SOCKET;
+        WSACleanup();
+        return;
     }
 }

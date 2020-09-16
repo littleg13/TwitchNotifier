@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <string>
 #include "HTTP.h"
-#include "TwitchStructs.hpp"
+#include "Follower.hpp"
+#include "EventQueue.h"
 
 #define RECV_BUF_SIZE 8192
 #define LISTEN_PORT "3000"
@@ -14,13 +15,17 @@
 
 class NotifyServer {
 public:
-    NotifyServer(updateEvent* update);
+    NotifyServer(EventQueue* p_eventQueue);
+    void run();
 
 private:
+    void initSocket();
+    void acceptChallenge();
     SOCKET listenSocket = INVALID_SOCKET;
     SOCKET clientSocket = INVALID_SOCKET;
     struct addrinfo* addrInfo = NULL;
-    updateEvent* toUpdate = nullptr;
+    EventQueue* eventQueue = nullptr;
+    int result;
 
 };
 #endif
