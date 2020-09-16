@@ -27,9 +27,6 @@ main: $(OBJS) $(LOCAL_UTIL_LIBRARIES)
 ../lib/libglsl.lib: ../glslutil/ShaderIF.h ../glslutil/ShaderIF.cpp
 	cd ../glslutil && $(MAKE)
 
-../lib/libImageReader.lib: ../ImageReader/ImageReader.h ../ImageReader/ImageReader.cpp
-	cd ../ImageReader && $(MAKE)
-
 ../lib/libmvc.lib: ../mvcutil/Controller.h ../mvcutil/Controller.cpp ../mvcutil/ModelView.h ../mvcutil/ModelView.cpp
 	cd ../mvcutil && $(MAKE)
 
