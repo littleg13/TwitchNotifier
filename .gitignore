@@ -1,6 +1,8 @@
 *.obj
 *.exe
 *.pdb
+*.lib
+*.ilk
 .vscode/
 bin/followers.json
 bin/dontShowOnStream.txt
