@@ -12,19 +12,9 @@ void createScene(ExtendedController& c, ShaderIF* particlesIF, ShaderIF* particl
 
 void set3DViewingInformation(double overallBB[])
 {
-	// IF we are using Viewing Strategy #1, THEN
-	//     Notify class ModelView that we initially want to see the entire scene:
-	//   ModelView::setMCRegionOfInterest(overallBB);
 	ModelView::setMCRegionOfInterest(overallBB);
-	// ELSE (Viewing Strategy #2)
-	//     Modify all three of deltaX, deltaY, and deltaZ of the incoming overallBB
-	//     to have the dimensions of the desired field of view, then invoke:
-	//   ModelView::setMCRegionOfInterest(modified_overallBB);
-	//   Tell the ModelView class that dynamic rotations are to be done about the eye.
 
-	// MC -> EC:
 
-	// TODO: Compute/set eye, center, up
 	cryph::AffPoint eye, center;
 	cryph::AffVector up;
 	float center_arr[3];
@@ -53,7 +43,6 @@ void set3DViewingInformation(double overallBB[])
 	ecZmax = -d + 1.5 * r;
 	ModelView::setECZminZmax(ecZmin, ecZmax);
 
-	// TODO: Compute/set ecZpp
 	double ecZpp;
 	ecZpp = ecZmax;
 	ModelView::setProjectionPlaneZ(ecZpp);
@@ -92,10 +81,7 @@ int main(int argc, char* argv[])
 	c.getOverallMCBoundingBox(xyz);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(0,0,0,1);
-	std::cout << "Bounding box: " << xyz[0] << " <= x <= " << xyz[1] << '\n';
-	std::cout << "              " << xyz[2] << " <= y <= " << xyz[3] << '\n';
-	std::cout << "              " << xyz[4] << " <= z <= " << xyz[5] << "\n\n";
-	std::cout << "Controls:\nSpacebar - Pause\nW - Full Winter\nS - Full Summer\n\n";
+
 	set3DViewingInformation(xyz);
 	c.setRunWaitsForAnEvent(false);
 	c.run();

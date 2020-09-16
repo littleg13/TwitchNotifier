@@ -10,7 +10,6 @@ ChatBot::ChatBot(EventQueue* p_eventQueue, followerDict* followers): eventQueue(
 void ChatBot::processEvent(updateEvent* event){
     if(event->action == updateEvent::ACTION::NEW_FOLLOWER){
         std::string followMSG = "Thank you for following @" + (*(event->info))["data"][0]["from_name"].string_value();
-        std::cout << (*(event->info)).dump() << std::endl;
         followMSG += "\nUse !color to change the color of your cube.";
         sendPrivMsg(followMSG);
     }
@@ -91,7 +90,6 @@ std::string ChatBot::unFrame(unsigned char* frame){
     }
     std::string data(reinterpret_cast<char*>(&frame[dataStart]), payload_len);
     if((frame[0] & 0x0F) == pongOpCode){
-        std::cout << "Recieved websocket pong" << std::endl;
         sendMsg(data, pongOpCode);
     }
     return data;
@@ -99,7 +97,6 @@ std::string ChatBot::unFrame(unsigned char* frame){
 
 void ChatBot::processMsg(unsigned char* msg){
     std::string command = unFrame(msg);
-    std::cout << command << std::endl;
     if(command.find("PING") != command.npos){
         sendMsg("PONG :tmi.twitch.tv", textOpCode);
         std::cout << "Sent Pong" << std::endl;
@@ -149,17 +146,19 @@ void ChatBot::sendMsg(std::string msg, uint8_t opCode){
     int length = 0;
     unsigned char* frame_bytes = frame(msg, opCode, length);
     SSL_write(ssl, frame_bytes, length);
-    std::cout << unFrame(frame_bytes) << std::endl;
 }
 
 void ChatBot::IRCAuthenticate(){
-    sendMsg("PASS oauth:uzgipm23ydig5l707iy7axd56nf95o", textOpCode);
+    std::string botOAuth;
+    std::ifstream file_handle;
+    file_handle.open("dontShowOnStream.txt");
+    file_handle >> botOAuth;
+    file_handle >> botOAuth;
+    file_handle >> botOAuth;
+    file_handle.close();
+    sendMsg("PASS oauth:" + botOAuth, textOpCode);
     sendMsg("NICK goopybot3000", textOpCode);
     sendMsg("JOIN #goopy131", textOpCode);
-    // sendMsg("Hello", textOpCode);
-    // sendMsg("Hello", textOpCode);
-    // sendMsg("Hello", textOpCode);
-    // sendMsg("Hello", textOpCode);
 }
 
 void ChatBot::performHandshake(){

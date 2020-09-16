@@ -70,7 +70,6 @@ struct HTTPResponse {
         if(content_type == "application/json"){
             std::string err;
             jsonContent = json11::Json::parse(content, err);
-            // std::cout << err << std::endl;
         }
         else if(content_type == "application/x-www-form-urlencoded"){
             std::map<std::string, json11::Json> moop;
