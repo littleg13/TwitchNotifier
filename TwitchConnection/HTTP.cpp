@@ -3,7 +3,6 @@
 
 HTTPResponse* HTTP::parseHTTP(std::string s, int dataLength){
     HTTPResponse* response = new HTTPResponse();
-    std::vector<std::string> lines;
     int pos = 0;
     std::string delimiter = "\r\n";
     while ((pos = s.find(delimiter)) != std::string::npos) {
@@ -15,18 +14,18 @@ HTTPResponse* HTTP::parseHTTP(std::string s, int dataLength){
                 s.erase(0, response->content_length + delimiter.length());
             }
         }
-        lines.push_back(s.substr(0, pos));
+        std::string line = s.substr(0, pos);
         s.erase(0, pos + delimiter.length());
         try{
-            pos = lines.back().find(" ");
-            std::string lookup = lines.back().substr(0, pos);
+            pos = line.find(" ");
+            std::string lookup = line.substr(0, pos);
             transform(lookup.begin(), lookup.end(), lookup.begin(), ::tolower);
             if(lookup == "post")
                 response->type = HTTPResponse::HTTP_TYPE::POST;
             else if(lookup == "get")
                  response->type = HTTPResponse::HTTP_TYPE::GET;
             if(response->httpLookups.find(lookup) != response->httpLookups.end())
-                *response->httpLookups.at(lookup) = (lines.back()).substr(pos + 1, (lines.back()).length());
+                *response->httpLookups.at(lookup) = line.substr(pos + 1, line.length());
 
         }
         catch(const std::out_of_range& e){

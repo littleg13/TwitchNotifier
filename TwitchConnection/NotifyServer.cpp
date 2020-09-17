@@ -22,7 +22,9 @@ void NotifyServer::run(){
                 updateEvent* event = new updateEvent();
                 event->action = updateEvent::ACTION::NEW_FOLLOWER;
                 event->info = &response->jsonContent;
+                eventQueue->mut.lock();
                 eventQueue->push(event);
+                eventQueue->mut.unlock();
             }
         }
         result = shutdown(clientSocket, SD_SEND);

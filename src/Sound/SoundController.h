@@ -3,8 +3,10 @@
 
 #include <iostream>
 #include <thread>
-#include <vector>
+#include <mutex>
+#include <queue>
 
+#include "Semaphore.h"
 #include "OpenAL/al.h"
 #include "OpenAL/alc.h"
 #include "CWaves.h"
@@ -19,17 +21,19 @@ class SoundController {
     };
     public:
         SoundController();
-        static void playSound(SOUNDS sound, int i);
+        static void playSound(SOUNDS sound);
         void processEvent(updateEvent* event);
         ~SoundController();
-        void cleanupSoundThreads();
     private:
         ALboolean ALFWLoadWaveToBuffer(const char *szWaveFile, ALuint uiBufferID);
+        static void soundPlayer(std::queue<SOUNDS>* soundQueue);
+        std::thread* playerThread;
         void initOpenAL();
         void initSources();
         void initBuffers();
-        static std::vector<std::thread*> soundThreads;
-        static std::vector<bool> soundThreadsActive;
+        std::queue<SOUNDS>* soundQueue;
+        static std::mutex soundQueueMux;
+        static Semaphore soundSem;
         int soundsActive = 0;
         ALCdevice *device;
         ALCcontext *context;

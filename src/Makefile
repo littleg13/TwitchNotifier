@@ -13,7 +13,7 @@ MAKE = nmake
 # >>> END: FOR LINUX - FOR MAC
 LOCAL_UTIL_LIBRARIES = ../lib/libcryph.lib ../lib/libglsl.lib  ../lib/libmvc.lib ../lib/libTwitch.lib
 
-OBJS = main.obj ExtendedController.obj PhongMaterial.obj SceneElement.obj ParticleSystem.obj Cube.obj SoundController.obj CWaves.obj
+OBJS = main.obj ExtendedController.obj PhongMaterial.obj SceneElement.obj ParticleSystem.obj Cube.obj SoundController.obj Semaphore.obj CWaves.obj
 
 main: $(OBJS) $(LOCAL_UTIL_LIBRARIES)
 	$(CPP) /Fe:"../bin/Notifier.exe" $(OBJS) $(LOCAL_UTIL_LIBRARIES) $(GL_LIBRARIES)
@@ -44,6 +44,8 @@ ParticleSystem.obj: SceneElements/ParticleSystem.h SceneElements/ParticleSystem.
 	$(CPP) $(C_FLAGS) SceneElements/ParticleSystem.cpp
 SoundController.obj: Sound/SoundController.h Sound/SoundController.cpp
 	$(CPP) $(C_FLAGS) Sound/SoundController.cpp
+Semaphore.obj: Sound/Semaphore.h Sound/Semaphore.cpp
+	$(CPP) $(C_FLAGS) Sound/Semaphore.cpp
 CWaves.obj: Sound/CWaves.h Sound/CWaves.cpp
 	$(CPP) $(C_FLAGS) Sound/CWaves.cpp
 

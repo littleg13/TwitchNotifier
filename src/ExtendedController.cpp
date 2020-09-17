@@ -62,7 +62,9 @@ void ExtendedController::handleDisplay()
 
 void ExtendedController::notifyOnUpdate(){
 	if(!eventQueue->isEmpty()){
+		eventQueue->mut.lock();
 		updateEvent* event = eventQueue->pop();
+		eventQueue->mut.unlock();
 		if(event->action == updateEvent::ACTION::NEW_FOLLOWER){
 			updateFollowers((*(event->info))["data"].array_items());
 		}
@@ -71,7 +73,6 @@ void ExtendedController::notifyOnUpdate(){
 
 		chatBot->processEvent(event);
 		soundController->processEvent(event);
-		soundController->cleanupSoundThreads();
 		delete event;
 		writeFollowersToFile();
 	}

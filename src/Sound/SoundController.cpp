@@ -2,13 +2,15 @@
 
 ALuint SoundController::sources[1];
 ALuint SoundController::buffers[1];
-std::vector<std::thread*> SoundController::soundThreads = std::vector<std::thread*>();
-std::vector<bool> SoundController::soundThreadsActive = std::vector<bool>();
+std::mutex SoundController::soundQueueMux;
+Semaphore SoundController::soundSem;
 
 SoundController::SoundController(){
     initOpenAL();
     initSources();
     initBuffers();
+    soundQueue = new std::queue<SOUNDS>();
+    playerThread = new std::thread(soundPlayer, soundQueue);
 }
 
 void SoundController::initOpenAL(){
@@ -48,30 +50,32 @@ SoundController::~SoundController(){
     alcMakeContextCurrent(NULL);
     alcDestroyContext(context);
     alcCloseDevice(device);
-    cleanupSoundThreads();
 }
 
 void SoundController::processEvent(updateEvent* event){
     if(event->action != updateEvent::ACTION::NONE){
         if(event->action == updateEvent::ACTION::NEW_FOLLOWER){
-            soundThreadsActive.push_back(true);
-            soundThreads.push_back(new std::thread(playSound, NEW_FOLLOWER, soundsActive));
-            soundsActive++;
+           soundQueueMux.lock();
+           soundQueue->push(SOUNDS::NEW_FOLLOWER);
+           soundQueueMux.unlock();
+           soundSem.release();
         }
     }
 }
 
-void SoundController::cleanupSoundThreads(){
-    for(int i=0;i<soundThreadsActive.size();i++){
-        if(!soundThreadsActive[i]){
-            delete soundThreads[i];
-            soundThreads.erase(soundThreads.begin() + i);
-            soundThreadsActive.erase(soundThreadsActive.begin() + i);
-        }
+void SoundController::soundPlayer(std::queue<SOUNDS>* soundQueue){
+    while(1){
+        soundSem.aqquire();
+        soundQueueMux.lock();
+        SOUNDS sound = soundQueue->front();
+        soundQueue->pop();
+        soundQueueMux.unlock();
+        playSound(sound);
     }
 }
 
-void SoundController::playSound(SOUNDS sound, int i){
+
+void SoundController::playSound(SOUNDS sound){
     alSourcei(sources[0], AL_BUFFER, buffers[sound]);
     alSourcePlay(sources[0]);
     ALint source_state;
@@ -79,7 +83,6 @@ void SoundController::playSound(SOUNDS sound, int i){
     while (source_state == AL_PLAYING) {
             alGetSourcei(sources[0], AL_SOURCE_STATE, &source_state);
     }
-    soundThreadsActive[i] = false;
 }
 
 ALboolean SoundController::ALFWLoadWaveToBuffer(const char *szWaveFile, ALuint uiBufferID)

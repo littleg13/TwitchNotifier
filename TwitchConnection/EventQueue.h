@@ -1,5 +1,6 @@
 #ifndef EVENTQUEUE_H
 #define EVENTQUEUE_H
+#include <mutex>
 #include "json11.hpp"
 
 struct updateEvent {
@@ -32,6 +33,7 @@ public:
     updateEvent* peek();
     int getSize();
     bool isEmpty();
+    std::mutex mut;
 private:
     Node* head = nullptr;
     Node* tail = nullptr;
