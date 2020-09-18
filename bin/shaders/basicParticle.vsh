@@ -23,11 +23,13 @@ uniform mat4 ec_lds = // (W-V map) * (projection matrix)
 	     0.0, 0.0, 0.0, 1.0);
 uniform mat4 transformationMat;
 uniform vec3 origin;
+uniform int billboard = 0;
 // Per-vertex attributes
 // 1. incoming vertex position in model coordinates
 layout (location = 0) in vec3 mcPosition;
 in vec3 mcVelocity;
 in vec3 mcNormal;
+in vec2 texCoords;
 // 2. incoming vertex normal vector in model coordinate
 // The lighting model will be computed in the fragment shader, so we
 // just need to pass on the per-vertex information it needs to do so.
@@ -44,6 +46,7 @@ void main ()
 {
 	// convert current vertex and its associated normal to eye coordinates
 	vec4 p_ecPosition = mc_ec * (transformationMat * vec4(mcPosition - origin, 1.0) +  vec4(origin, 1.0));
+
 	pvaOut.ecPosition = p_ecPosition.xyz/p_ecPosition.w;
 	vec3 toViewer; 
 	if(ec_lds[3][3] == 0){
@@ -55,9 +58,7 @@ void main ()
 	mat3 normalMatrix = transpose( inverse( mat3x3(mc_ec) ) );
 	pvaOut.ecUnitNormal = normalize(normalMatrix * mcNormal);
 	pvaOut.mcVelocity = mcVelocity;
-	// OpenGL expects us to set "gl_Position" to the projective space
-	// representation of the 3D logical device space coordinates of the
-	// input vertex:
-	pvaOut.texCoords = vec2(0, 0);
+
+	pvaOut.texCoords = texCoords;
 	gl_Position = ec_lds * p_ecPosition;
 }

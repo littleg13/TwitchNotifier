@@ -15,15 +15,14 @@ SoundController::SoundController(){
 
 void SoundController::initOpenAL(){
     device = alcOpenDevice(NULL);
-    if(!device){
-            std::cout << "No Sound device was found!" << std::endl;
-    }
+    if(!device)
+        std::cout << "No Sound device was found!" << std::endl;
     context = alcCreateContext(device, NULL);
     if(!alcMakeContextCurrent(context)){
-            std::cout << "Failed to make sound context current" << std::endl;
-            ALCenum error = alGetError();
-            if(error != AL_NO_ERROR)
-                std::cout << error << std::endl;
+        std::cout << "Failed to make sound context current" << std::endl;
+        ALCenum error = alGetError();
+        if(error != AL_NO_ERROR)
+            std::cout << error << std::endl;
     }
 }
 
@@ -81,7 +80,7 @@ void SoundController::playSound(SOUNDS sound){
     ALint source_state;
     alGetSourcei(sources[0], AL_SOURCE_STATE, &source_state);
     while (source_state == AL_PLAYING) {
-            alGetSourcei(sources[0], AL_SOURCE_STATE, &source_state);
+        alGetSourcei(sources[0], AL_SOURCE_STATE, &source_state);
     }
 }
 

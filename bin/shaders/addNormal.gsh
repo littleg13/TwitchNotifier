@@ -32,6 +32,7 @@ void main()
 		gl_Position = gl_in[i].gl_Position;
 		pvaOut.ecPosition = pvaIn[i].ecPosition;
 		pvaOut.mcVelocity = pvaIn[i].mcVelocity;
+		pvaOut.texCoords = pvaIn[i].texCoords;
 		pvaOut.ecUnitNormal = n;
 		EmitVertex();
 	}

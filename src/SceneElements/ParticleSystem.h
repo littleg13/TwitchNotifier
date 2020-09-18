@@ -32,12 +32,9 @@ class ParticleSystem : public SceneElement
 	
 
 public:
-	// As before: you will likely want to add parameters to the constructor
 	ParticleSystem(ShaderIF* sIF, ShaderIF* particleUpdatesIF, ShaderIF* physicsUpdatesIF, int n_par, followerDict* p_followers);
 	virtual ~ParticleSystem();
-
-	// xyzLimits: {mcXmin, mcXmax, mcYmin, mcYmax, mcZmin, mcZmax}
-	void getMCBoundingBox(double* xyzLimitsF) const;
+	void getMCBoundingBox(double* xyzLimits) const;
 	bool handleCommand(unsigned char anASCIIChar, double ldsX, double ldsY);
 	void render();
 	void renderParticleSystem(cryph::Matrix4x4 M);

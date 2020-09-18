@@ -3,11 +3,13 @@
 #include "ExtendedController.h"
 #include "Inline.h"
 #include "SceneElements/ParticleSystem.h"
+#include "SceneElements/FooterText.h"
 #include "PhongMaterial.h"
 
 void createScene(ExtendedController& c, ShaderIF* particlesIF, ShaderIF* particleUpdatesIF, ShaderIF* physicsUpdatesIF)
 {
 	c.addModel(new ParticleSystem(particlesIF, particleUpdatesIF, physicsUpdatesIF, c.followers->size(), c.followers));
+	c.addModel(new FooterText(particlesIF, c.followers));
 }
 
 void set3DViewingInformation(double overallBB[])
@@ -23,10 +25,10 @@ void set3DViewingInformation(double overallBB[])
 		center_arr[i/2] = (overallBB[i+1] + overallBB[i]) / 2;
 		r = cryph::maximum((overallBB[i+1] - overallBB[i]) / 2, r);
 	}
-	eye = cryph::AffPoint(0, 0, 1);
+	eye = cryph::AffPoint(0.0, 0.35, 1);
 	up = cryph::AffPoint(0, 1, 0);
 	center = cryph::AffPoint(center_arr);
-	d = 9 * r;
+	d = 18 * r;
 	eye = center + d * eye;
 	ModelView::setEyeCenterUp(eye, center, up);
 

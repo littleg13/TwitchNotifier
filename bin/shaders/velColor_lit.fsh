@@ -35,10 +35,6 @@ uniform int addSpecularAfterTexture = 1;
 // If support multiple textures, all of the following would be arrays
 uniform sampler2D textureMap;
 uniform vec4 textureColorMultiplier = vec4(1.0, 1.0, 1.0, 1.0);
-// "texCoordsOutOfRangeSpec" is negative if not initialized; it is 0 if the
-// GLSL "texture" function is not to be used at all when s (t) is out of 0..1;
-// and it is a normal GL_TEXTURE_WRAP code otherwise.
-//uniform ivec2 texCoordsOutOfRangeSpec = ivec2(-1, -1); // not yet initialized by client
 
 // Lighting environment
 const int MAX_NUM_LIGHTS = 8;
