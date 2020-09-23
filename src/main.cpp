@@ -20,7 +20,7 @@ void set3DViewingInformation(double overallBB[])
 	cryph::AffPoint eye, center;
 	cryph::AffVector up;
 	float center_arr[3];
-	double r, d = 0;
+	double r = 0, d = 0;
 	for(int i=0;i<6;i+=2){
 		center_arr[i/2] = (overallBB[i+1] + overallBB[i]) / 2;
 		r = cryph::maximum((overallBB[i+1] - overallBB[i]) / 2, r);
@@ -28,7 +28,7 @@ void set3DViewingInformation(double overallBB[])
 	eye = cryph::AffPoint(0.0, 0.35, 1);
 	up = cryph::AffPoint(0, 1, 0);
 	center = cryph::AffPoint(center_arr);
-	d = 18 * r;
+	d = 9 * r;
 	eye = center + d * eye;
 	ModelView::setEyeCenterUp(eye, center, up);
 
@@ -37,8 +37,6 @@ void set3DViewingInformation(double overallBB[])
 	// Specify the initial projection type desired
 	ModelView::setProjection(PERSPECTIVE);
 
-	// TODO: Compute/set ecZmin, ecZmax (It is often useful to exaggerate
-	//       these limits somewhat to prevent unwanted depth clipping.)
 	double ecZmin, ecZmax;
 	// 1.5 is slightly larger than 2/sqrt(2). 2/sqrt(2) * r is the max distance to a corner of square.
 	ecZmin = -d - 1.5 * r;

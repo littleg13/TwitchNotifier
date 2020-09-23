@@ -21,9 +21,11 @@ uniform mat4 ec_lds = // (W-V map) * (projection matrix)
 	     0.0, 1.0, 0.0, 0.0, // ==> ORTHOGONAL projection -AND- EC = LDS
 	     0.0, 0.0, -1.0, 0.0,
 	     0.0, 0.0, 0.0, 1.0);
-uniform mat4 transformationMat;
-uniform vec3 origin;
-uniform int billboard = 0;
+uniform mat4 rotationMat = 
+	mat4(1.0, 0.0, 0.0, 0.0, // initialize to identity matrix
+			0.0, 1.0, 0.0, 0.0,
+			0.0, 0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0, 1.0);
 // Per-vertex attributes
 // 1. incoming vertex position in model coordinates
 layout (location = 0) in vec3 mcPosition;
@@ -45,7 +47,7 @@ out PVA
 void main ()
 {
 	// convert current vertex and its associated normal to eye coordinates
-	vec4 p_ecPosition = mc_ec * (transformationMat * vec4(mcPosition - origin, 1.0) +  vec4(origin, 1.0));
+	vec4 p_ecPosition = mc_ec * vec4(mcPosition, 1.0);
 
 	pvaOut.ecPosition = p_ecPosition.xyz/p_ecPosition.w;
 	vec3 toViewer; 

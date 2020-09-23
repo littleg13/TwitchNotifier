@@ -7,6 +7,7 @@ struct updateEvent {
     enum ACTION {
         NEW_FOLLOWER,
         CHANGE_COLOR,
+        CHANGE_SHAPE,
         NONE
     };
     ACTION action = NONE;

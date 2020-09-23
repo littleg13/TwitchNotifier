@@ -2,16 +2,65 @@
 
 
 commandMap Commands::Map {
-        {"color", changeColor}
+        {"color", changeColor},
+        {"shape", changeShape},
+        {"shapes", displayShapes}
     };
 
 EventQueue* Commands::eventQueue = nullptr;
 followerDict* Commands::followers = nullptr;
 
+std::string Commands::knownShapes[TotalShapes] = {
+    "cube",
+    "sphere"
+};
+
+int Commands::displayShapes(Command com, std::string &err){
+    err = "Available shapes:\n [";
+    for(int i=0;i<TotalShapes;i++){
+        err += "'" + knownShapes[i] + "'";
+        if(i != TotalShapes - 1)
+            err += ", ";
+    }
+    err += "]";
+    return 1;
+}
+
+int Commands::changeShape(Command com, std::string &err){
+    if(followers->find(com.user) == followers->end()){
+        err = "You must be following to have an object";
+        return 1;
+    }
+    if(com.data.length() > 0){
+        std::string foundShape = "";
+        for(int i=0;i<TotalShapes;i++){
+            if(com.data == knownShapes[i]){
+                foundShape = knownShapes[i];
+                break;
+            }
+        }
+        if(foundShape.length() == 0){
+            err = com.data + " is not a known shape";
+            return 1;
+        }
+        (*followers)[com.user]->shape = foundShape;
+        updateEvent* event = new updateEvent();
+        event->info = new json11::Json(
+            json11::Json::object({{"user", com.user}})
+        );
+        event->action = updateEvent::ACTION::CHANGE_SHAPE;
+        eventQueue->push(event);
+    }
+    else{
+        err = "Please supply a valid shape. To print available shapes use !shapes";
+        return 1;
+    }
+    return 0;
+}
 
 int Commands::changeColor(Command com, std::string &err){
     if(followers->find(com.user) == followers->end()){
-        err = "You must be following to have a cube";
+        err = "You must be following to have an object";
         return 1;
     }
     if(com.data.length() > 0){
@@ -48,8 +97,8 @@ int Commands::changeColor(Command com, std::string &err){
         }
         for(int i=0;i<3;i++){
             (*followers)[com.user]->color[i] = color[i];
-            (*followers)[com.user]->hasColor = true;
         }
+        (*followers)[com.user]->hasColor = true;
         updateEvent* event = new updateEvent();
         event->info = new json11::Json(
             json11::Json::object({{"user", com.user}})

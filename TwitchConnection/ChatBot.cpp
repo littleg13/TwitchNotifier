@@ -4,6 +4,7 @@
 
 ChatBot::ChatBot(EventQueue* p_eventQueue, followerDict* followers): eventQueue(p_eventQueue){
     Commands::followers = followers;
+    Commands::eventQueue = eventQueue;
     connectSocket();
 }
 

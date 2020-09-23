@@ -3,7 +3,7 @@
 // addNormal.gsh - add normal vectors to triangles as they pass through.
 
 layout ( triangles ) in;
-layout ( triangle_strip, max_vertices = 12 ) out;
+layout ( triangle_strip, max_vertices = 45 ) out;
 
 in PVA
 {

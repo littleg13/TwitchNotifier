@@ -1,14 +1,12 @@
 #version 430
 
-const int verticesPerParticle = 8;
-
 uniform int n_active_particles;
 
 struct Particle{
     vec4 position;
-    int vertexIndices[verticesPerParticle];
     vec4 velocity;
     vec4 quaternion;
+    vec4 scale;
     vec4 rotAxis;
     vec4 origin;
     float seed;

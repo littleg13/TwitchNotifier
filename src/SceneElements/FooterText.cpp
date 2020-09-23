@@ -52,7 +52,6 @@ float FooterText::getOpacity(){
 void FooterText::renderFooterText(cryph::Matrix4x4 M){
     float mat[16];
     glUniformMatrix4fv(shaderIF->ppuLoc("mc_ec"), 1, false, M.extractColMajor(mat));
-    glUniformMatrix4fv(shaderIF->ppuLoc("transformationMat"), 1, false, cryph::Matrix4x4().extractColMajor(mat));
     float fColor[] = { 1.0, 1.0, 1.0, getOpacity() }; // color to be used to render the font
 	glUniform4fv(shaderIF->ppuLoc("fontColor"), 1, fColor);
     glUniform1i(shaderIF->ppuLoc("renderingFontString"), 1);

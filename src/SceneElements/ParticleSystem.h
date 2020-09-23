@@ -3,11 +3,15 @@
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
 
+#include <vector>
+#include <unordered_map>
+
 #include "SceneElement.h"
 #include "GLFWController.h"
+#include "MeshParticle.h"
 #include "cube.h"
+#include "sphere.h"
 
-#define VERTICES_PER_PARTICLE 8
 #define MAX_PARTICLES 5000
 
 typedef float vec3[3];
@@ -16,9 +20,9 @@ typedef float vec2[2];
 typedef struct Particle
 {
 	vec4 position;
-	int vertexIndices[VERTICES_PER_PARTICLE];
 	vec4 velocity;
-	vec4 quaternion;
+	vec4 transformation;
+	vec4 scale;
 	vec4 rotAxis;
 	vec4 origin;
 	float seed;
@@ -47,8 +51,8 @@ private:
 	float d = 1;
 	Particle* particles;
 	vec3* positions;
-	vec4* vertices;
-	SceneElement** renderElements;
+	std::vector<std::array<double, 4>>* vertices;
+	MeshParticle** renderElements;
 	followerDict* followers;
 	// uint32_t* hash_table;
 	GLuint vao[1];
@@ -58,6 +62,10 @@ private:
 	void particlePass();
 	void physicsPass();
 	void initParticles();
+	void changeShape(int index, std::string shape);
+	void loadMeshes(std::vector<std::array<double, 4>>* vertexArray);
+	MeshParticle* makeMesh(std::string shape, ShaderIF* sIF, vec3 color);
+	void bufferVertexData();
 	PhongMaterial solidSnow = PhongMaterial(1.0, 1.0, 1.0, 0.2, 0.9, 0.2, 5, 1);
 	float last_time = -1;
 	bool paused = false;
