@@ -6,7 +6,7 @@
 #include "Follower.hpp"
 #include "EventQueue.h"
 
-#define TotalShapes 2
+#define TotalShapes 4
 
 struct Command{
     std::string user = "";

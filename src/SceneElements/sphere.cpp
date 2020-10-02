@@ -10,10 +10,9 @@ int Sphere::vertexOffset = 0;
 GLuint Sphere::ebo[PRECISION];
 
 Sphere::Sphere(ShaderIF* sIF, vec3 color) : MeshParticle(sIF, color){
-};
+}
 
 Sphere::~Sphere(){
-    glDeleteBuffers(stackCount, ebo);
 }
 
 int Sphere::loadVertices(std::vector<std::array<double, 4>>* vertexArray, int p_offset){
@@ -27,7 +26,7 @@ int Sphere::loadVertices(std::vector<std::array<double, 4>>* vertexArray, int p_
         for(int j=0;j<sectorCount;j++){
             float phi = (PI / 2.0) - j * dPhi;
             cryph::AffVector nHat = cos(phi)*(cos(theta)*u + sin(theta)*v) + sin(phi)*w;
-            cryph::AffPoint p = nHat;
+            cryph::AffPoint p = nHat * 0.6;
             std::array<double, 4> pArr;
             p.aCoords(pArr.data());
             pArr[3] = 1.0;

@@ -66,6 +66,12 @@ MeshParticle* ParticleSystem::makeMesh(std::string shape, ShaderIF* sIF, vec3 co
 	else if(shape == "cube"){
 		return new Cube(sIF, color);
 	}
+	else if(shape == "amongus"){
+		return new AmongUs(sIF, color);
+	}
+	else if(shape == "chicken"){
+		return new Chicken(sIF, color);
+	}
 	return new Cube(sIF, color);
 }
 
@@ -82,6 +88,8 @@ void ParticleSystem::loadMeshes(std::vector<std::array<double, 4>>* vertexArray)
 	int offset = 0;
 	offset += Cube::loadVertices(vertexArray, offset);
 	offset += Sphere::loadVertices(vertexArray, offset);
+	offset += AmongUs::loadVertices(vertexArray, offset);
+	offset += Chicken::loadVertices(vertexArray, offset);
 }
 
 void ParticleSystem::initParticles(){

@@ -11,6 +11,8 @@
 #include "MeshParticle.h"
 #include "cube.h"
 #include "sphere.h"
+#include "amongUs.h"
+#include "chicken.h"
 
 #define MAX_PARTICLES 5000
 

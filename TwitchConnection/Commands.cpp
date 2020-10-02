@@ -12,7 +12,9 @@ followerDict* Commands::followers = nullptr;
 
 std::string Commands::knownShapes[TotalShapes] = {
     "cube",
-    "sphere"
+    "sphere",
+    "amongus",
+    "chicken"
 };
 
 int Commands::displayShapes(Command com, std::string &err){

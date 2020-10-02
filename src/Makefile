@@ -8,7 +8,7 @@ MAKE = nmake
 
 LOCAL_UTIL_LIBRARIES = ../lib/libcryph.lib ../lib/libglsl.lib  ../lib/libmvc.lib ../lib/libTwitch.lib ../lib/libfont.lib
 
-OBJS = main.obj ExtendedController.obj PhongMaterial.obj SceneElement.obj ParticleSystem.obj MeshParticle.obj Cube.obj Sphere.obj FooterText.obj SoundController.obj Semaphore.obj CWaves.obj
+OBJS = main.obj ExtendedController.obj PhongMaterial.obj SceneElement.obj ParticleSystem.obj ObjLoader.obj MeshParticle.obj AmongUs.obj Chicken.obj Cube.obj Sphere.obj FooterText.obj SoundController.obj Semaphore.obj CWaves.obj
 
 main: $(OBJS) $(LOCAL_UTIL_LIBRARIES)
 	$(CPP) /Fe:"../bin/Notifier.exe" $(OBJS) $(LOCAL_UTIL_LIBRARIES) $(GL_LIBRARIES)
@@ -36,10 +36,16 @@ PhongMaterial.obj: PhongMaterial.cpp
 	$(CPP) $(C_FLAGS) PhongMaterial.cpp
 SceneElement.obj: SceneElement.h SceneElement.cpp
 	$(CPP) $(C_FLAGS) SceneElement.cpp
+ObjLoader.obj: ObjLoader.h ObjLoader.cpp
+	$(CPP) $(C_FLAGS) ObjLoader.cpp
 MeshParticle.obj: SceneElements/MeshParticle.h SceneElements/MeshParticle.cpp
 	$(CPP) $(C_FLAGS) SceneElements/MeshParticle.cpp
 Cube.obj: SceneElements/Cube.h SceneElements/Cube.cpp
 	$(CPP) $(C_FLAGS) SceneElements/Cube.cpp
+Chicken.obj: SceneElements/Chicken.h SceneElements/Chicken.cpp
+	$(CPP) $(C_FLAGS) SceneElements/Chicken.cpp
+AmongUs.obj: SceneElements/AmongUs.h SceneElements/AmongUs.cpp
+	$(CPP) $(C_FLAGS) SceneElements/AmongUs.cpp
 Sphere.obj: SceneElements/Sphere.h SceneElements/Sphere.cpp
 	$(CPP) $(C_FLAGS) SceneElements/Sphere.cpp
 ParticleSystem.obj: SceneElements/ParticleSystem.h SceneElements/ParticleSystem.cpp
