@@ -1,5 +1,5 @@
 CPP = cl.exe /Zi /EHsc
-C_FLAGS = -c -DGL_GLEXT_PROTOTYPES -I../cryphutil -I../glslutil -I../include /EHsc
+C_FLAGS = -c /MDd -I../cryphutil -I../glslutil -I../include /EHsc
 
 LINK = lib.exe
 MAKE = nmake

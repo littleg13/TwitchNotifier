@@ -6,13 +6,14 @@
 #include <mutex>
 #include <queue>
 
-#include "Semaphore.h"
+#include "../Semaphore.hpp"
 #include "OpenAL/al.h"
 #include "OpenAL/alc.h"
 #include "CWaves.h"
 #include "EventQueue.h"
 
 #define NEW_FOLLOWER_FILE "media/new_follower.wav"
+#define NEW_SUBSCRIBER_FILE "media/new_follower.wav"
 
 class SoundController {
     enum SOUNDS {
@@ -38,7 +39,7 @@ class SoundController {
         ALCdevice *device;
         ALCcontext *context;
         static ALuint sources[1];
-        static ALuint buffers[1];
+        static ALuint buffers[2];
         CWaves* g_pWaveLoader;
 };
 

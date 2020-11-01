@@ -14,7 +14,7 @@
 #include "amongUs.h"
 #include "chicken.h"
 
-#define MAX_PARTICLES 5000
+#define MAX_PARTICLES 100000
 
 typedef float vec3[3];
 typedef float vec4[4];
@@ -38,7 +38,7 @@ class ParticleSystem : public SceneElement
 	
 
 public:
-	ParticleSystem(ShaderIF* sIF, ShaderIF* particleUpdatesIF, ShaderIF* physicsUpdatesIF, int n_par, followerDict* p_followers);
+	ParticleSystem(ShaderIF* sIF, ShaderIF* particleUpdatesIF, ShaderIF* physicsUpdatesIF, int n_par, UserDict* p_users);
 	virtual ~ParticleSystem();
 	void getMCBoundingBox(double* xyzLimits) const;
 	bool handleCommand(unsigned char anASCIIChar, double ldsX, double ldsY);
@@ -55,7 +55,7 @@ private:
 	vec3* positions;
 	std::vector<std::array<double, 4>>* vertices;
 	MeshParticle** renderElements;
-	followerDict* followers;
+	UserDict* users;
 	// uint32_t* hash_table;
 	GLuint vao[1];
 	GLuint vbo[2];

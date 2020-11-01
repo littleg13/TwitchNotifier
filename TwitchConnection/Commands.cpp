@@ -8,7 +8,7 @@ commandMap Commands::Map {
     };
 
 EventQueue* Commands::eventQueue = nullptr;
-followerDict* Commands::followers = nullptr;
+UserDict* Commands::users = nullptr;
 
 std::string Commands::knownShapes[TotalShapes] = {
     "cube",
@@ -29,7 +29,7 @@ int Commands::displayShapes(Command com, std::string &err){
 }
 
 int Commands::changeShape(Command com, std::string &err){
-    if(followers->find(com.user) == followers->end()){
+    if(users->find(com.userID) == users->end()){
         err = "You must be following to have an object";
         return 1;
     }
@@ -45,11 +45,10 @@ int Commands::changeShape(Command com, std::string &err){
             err = com.data + " is not a known shape";
             return 1;
         }
-        (*followers)[com.user]->shape = foundShape;
+        User* user = (*users)[com.userID];
+        user->shape = foundShape;
         updateEvent* event = new updateEvent();
-        event->info = new json11::Json(
-            json11::Json::object({{"user", com.user}})
-        );
+        event->user = new User(*user);
         event->action = updateEvent::ACTION::CHANGE_SHAPE;
         eventQueue->push(event);
     }
@@ -61,7 +60,7 @@ int Commands::changeShape(Command com, std::string &err){
 }
 
 int Commands::changeColor(Command com, std::string &err){
-    if(followers->find(com.user) == followers->end()){
+    if(users->find(com.userID) == users->end()){
         err = "You must be following to have an object";
         return 1;
     }
@@ -97,14 +96,13 @@ int Commands::changeColor(Command com, std::string &err){
                 return 1;
             }
         }
+        User* user = (*users)[com.userID];
         for(int i=0;i<3;i++){
-            (*followers)[com.user]->color[i] = color[i];
+            user->color[i] = color[i];
         }
-        (*followers)[com.user]->hasColor = true;
+        user->hasColor = true;
         updateEvent* event = new updateEvent();
-        event->info = new json11::Json(
-            json11::Json::object({{"user", com.user}})
-        );
+        event->user = new User(*user);
         event->action = updateEvent::ACTION::CHANGE_COLOR;
         eventQueue->push(event);
     }

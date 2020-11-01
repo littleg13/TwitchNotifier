@@ -1,40 +1,10 @@
 #include "HTTP.h"
 
-
-HTTPResponse* HTTP::parseHTTP(std::string s, int dataLength){
-    HTTPResponse* response = new HTTPResponse();
-    int pos = 0;
-    std::string delimiter = "\r\n";
-    while ((pos = s.find(delimiter)) != std::string::npos) {
-        if(pos == 0){
-            s.erase(0, pos + delimiter.length());
-            response->fixInputs();
-            if(response->content_length_str != ""){
-                response->content = s.substr(0, response->content_length);
-                s.erase(0, response->content_length + delimiter.length());
-            }
-        }
-        std::string line = s.substr(0, pos);
-        s.erase(0, pos + delimiter.length());
-        try{
-            pos = line.find(" ");
-            std::string lookup = line.substr(0, pos);
-            transform(lookup.begin(), lookup.end(), lookup.begin(), ::tolower);
-            if(lookup == "post")
-                response->type = HTTPResponse::HTTP_TYPE::POST;
-            else if(lookup == "get")
-                 response->type = HTTPResponse::HTTP_TYPE::GET;
-            if(response->httpLookups.find(lookup) != response->httpLookups.end())
-                *response->httpLookups.at(lookup) = line.substr(pos + 1, line.length());
-
-        }
-        catch(const std::out_of_range& e){
-            // std::cout << "Add ability to handle " << (*it).substr(0, pos) << std::endl;
-        }
-    }
-    response->parseContent();
-    return response;
-}
+std::unordered_map<std::string, HTTPResponse::HTTP_TYPE> HTTPResponse::httpRequests = {
+    {"GET", HTTP_TYPE::GET},
+    {"POST", HTTP_TYPE::POST},
+    {"OPTIONS", HTTP_TYPE::OPTIONS}
+};
 
 HTTPResponse* HTTP::ssl_recv(SSL* ssl, SOCKET Socket){
     char* buf = new char[RECV_BUF_SIZE];
@@ -46,7 +16,7 @@ HTTPResponse* HTTP::ssl_recv(SSL* ssl, SOCKET Socket){
     ioctlsocket(Socket, FIONBIO, &mode);
     while(1){
         if((dataLength = SSL_read(ssl, buf, RECV_BUF_SIZE)) > 0){
-            data += std::string(buf);
+            data += std::string(buf, dataLength);
             readFirst = true;
         }
         else{
@@ -63,7 +33,7 @@ HTTPResponse* HTTP::ssl_recv(SSL* ssl, SOCKET Socket){
     }
     mode = 0;
     ioctlsocket(Socket, FIONBIO, &mode);
-    return HTTP::parseHTTP(data, dataLength);
+    return new HTTPResponse(data, dataLength);
 }
 
 HTTPResponse* HTTP::http_recv(SOCKET Socket){
@@ -76,13 +46,13 @@ HTTPResponse* HTTP::http_recv(SOCKET Socket){
     ioctlsocket(Socket, FIONBIO, &mode);
     while(1){
         if((dataLength = recv(Socket, buf, RECV_BUF_SIZE, 0)) > 0){
-            data += std::string(buf);
+            data += std::string(buf, dataLength);
             readFirst = true;
         }
         else{
             if(readFirst)
                 break;
-            if(count > 10){
+            if(count > 100){
                 printf("Timeout\n");
                 return nullptr;
             }
@@ -93,7 +63,7 @@ HTTPResponse* HTTP::http_recv(SOCKET Socket){
     delete[] buf;
     mode = 0;
     ioctlsocket(Socket, FIONBIO, &mode);
-    return HTTP::parseHTTP(data, dataLength);
+    return new HTTPResponse(data, dataLength);
 }
 
     HTTPResponse* HTTP::ssl_GET(SSL* ssl, SOCKET Socket, std::string host, std::string path, std::string* headers, int numHeaders, std::string* params, int numParams){

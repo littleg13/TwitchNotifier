@@ -1,5 +1,5 @@
 CPP = cl.exe
-C_FLAGS = -c /EHsc
+C_FLAGS = -c /MDd /EHsc
 
 LINK = lib.exe
 

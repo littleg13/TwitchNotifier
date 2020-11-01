@@ -1,5 +1,5 @@
 CPP = cl.exe
-C_FLAGS = -c -DGL_GLEXT_PROTOTYPES /EHsc -I../include -I../cryphutil
+C_FLAGS = -c /MDd /EHsc -I../include -I../cryphutil
 
 LINK = lib.exe
 

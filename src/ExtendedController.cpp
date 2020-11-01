@@ -10,11 +10,11 @@ SoundController* ExtendedController::soundController = nullptr;
 ExtendedController::ExtendedController(const std::string& name, int rcFlags):
 	GLFWController(name, rcFlags)
 {
-	followers = new std::unordered_map<std::string, Follower*>;
+	users = new UserDict;
 }
 
 ExtendedController::~ExtendedController(){
-	delete followers;
+	delete users;
 	delete eventQueue;
 }
 
@@ -65,82 +65,75 @@ void ExtendedController::notifyOnUpdate(){
 		eventQueue->mut.lock();
 		updateEvent* event = eventQueue->pop();
 		eventQueue->mut.unlock();
-		if(event->action == updateEvent::ACTION::NEW_FOLLOWER){
-			updateFollowers((*(event->info))["data"].array_items());
+		if(event->action == updateEvent::ACTION::NEW_FOLLOWER ||
+		   event->action == updateEvent::ACTION::NEW_SUBSCRIBER ||
+		   event->action == updateEvent::ACTION::GIFTED_SUBSCRIBER){
+			User* user_arr[1] = {event->user};
+			updateUsers(user_arr, 1);
 		}
 		for (std::vector<ModelView*>::iterator it=models.begin() ; it<models.end() ; it++)
 			(*it)->handleUpdate(reinterpret_cast<void*>(event));
 
 		chatBot->processEvent(event);
 		soundController->processEvent(event);
+		if(event->user){
+			saveUserDB(event->user->id);
+		}
 		delete event;
-		writeFollowersToFile();
 	}
 }
 
-void ExtendedController::startTwitchServer(EventQueue* eventQueue){
-    notifyServer = new NotifyServer(eventQueue);
+void ExtendedController::startTwitchServer(EventQueue* eventQueue, UserDict* users){
+    notifyServer = new NotifyServer(eventQueue, users);
 	notifyServer->run();
 }
 
-void ExtendedController::startChatServer(EventQueue* eventQueue, followerDict* followers){
-	chatBot = new ChatBot(eventQueue, followers);
+void ExtendedController::startChatServer(EventQueue* eventQueue, UserDict* users){
+	chatBot = new ChatBot(eventQueue, users);
 	chatBot->runWebSocket();
 }
 
-void ExtendedController::writeFollowersToFile(){
-	std::ofstream file_handle;
-	file_handle.open(followerFile, std::ofstream::trunc);
-	file_handle << "{\n";
-	std::string toPrint = "";
-	for(auto it = followers->begin(); it != followers->end(); ++it){
-		std::string jsonString = (*it).second->to_json().dump();
-		toPrint += jsonString.substr(1, jsonString.length() - 2) + ",\n";
-	}
-	file_handle << toPrint.substr(0, toPrint.length()-2);
-	file_handle << "\n}";
-	file_handle.close();
+void ExtendedController::saveUserDB(int userID){
+	updateEvent* subEvent = new updateEvent();
+	subEvent->user = users->at(userID);
+	dbController->processEvent(subEvent);
 }
 
-void ExtendedController::updateFollowers(std::vector<json11::Json> follower_arr){
-    for(auto it = follower_arr.begin();it != follower_arr.end(); ++it){
-		std::string name = (*it)["from_name"].string_value();
-		transform(name.begin(), name.end(), name.begin(), ::tolower);
-		std::string followerName = name;
-		if(followers->find(followerName) == followers->end()){
-			followers->insert({followerName, new Follower(*it)});
-			(*followers)[followerName]->index = numFollowers;
-			numFollowers++;
+void ExtendedController::updateUsers(User** user_arr, int n){
+    for(int i=0;i<n;i++){
+		if(users->find(user_arr[i]->id) == users->end()){
+			User* user = new User(*user_arr[i]);
+			user->index = numusers;
+			users->insert({user->id, user});
+			numusers++;
+		}
+		else{
+			if(user_arr[i]->privilege > users->at(user_arr[i]->id)->privilege)
+				users->at(user_arr[i]->id)->privilege = user_arr[i]->privilege;
 		}
     }
 }
 
-void ExtendedController::readFollowersFromFile(){
-	std::ifstream file_handle;
-	file_handle.open(followerFile);
-	std::string content((std::istreambuf_iterator<char>(file_handle)), (std::istreambuf_iterator<char>()));
-	file_handle.close();
-	std::string err;
-	json11::Json json = json11::Json::parse(content, err);
-	const json11::Json::object* ob = &(json.object_items());
-	for(auto it = ob->begin(); it != ob->end(); ++it){
-		Follower* fol = new Follower(it->second);
-		followers->insert({it->first, fol});
-	}
-	numFollowers = followers->size();
+void ExtendedController::loadUserDB(){
+	dbController->getUsers(users);
+	numusers = users->size();
 }
 
 void ExtendedController::enableTwitch(){
+	dbController = new DBController();
 	eventQueue = new EventQueue();
 	soundController = new SoundController();
     con = new TwitchConnection();
     con->getOauthToken();
-    twitchThread = new std::thread(ExtendedController::startTwitchServer, eventQueue);
-	chatThread = new std::thread(ExtendedController::startChatServer, eventQueue, followers);
-	readFollowersFromFile();
+    twitchThread = new std::thread(ExtendedController::startTwitchServer, eventQueue, users);
+	chatThread = new std::thread(ExtendedController::startChatServer, eventQueue, users);
+	loadUserDB();
     con->subscribeToFollower();
-	updateFollowers(con->getFollowers());
-	
+	con->subscribeToSubscriber();
+	std::vector<User*>* userVec = new std::vector<User*>();
+	con->getUsers(userVec);
+	updateUsers(userVec->data(), userVec->size());
+	delete userVec;
 }
 
 // The following must a public method in class ExtendedController:

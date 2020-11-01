@@ -3,21 +3,19 @@
 #include <string>
 #include <unordered_map>
 #include <stdexcept>
-#include "Follower.hpp"
+#include "user.hpp"
 #include "EventQueue.h"
 
 #define TotalShapes 4
 
 struct Command{
-    std::string user = "";
+    int userID;
     std::string command = "";
     std::string data = "";
 };
 
 typedef int (*commandFunction)(Command com, std::string &err);
 typedef std::unordered_map<std::string, commandFunction> commandMap;
-typedef std::unordered_map<std::string, Follower*> followerDict;
-
 class Commands{
 public:
     static int changeColor(Command com, std::string &err);
@@ -25,7 +23,7 @@ public:
     static int displayShapes(Command com, std::string &err);
     static std::string knownShapes[TotalShapes];
     static EventQueue* eventQueue;
-    static followerDict* followers;
+    static UserDict* users;
     static commandMap Map;
 };
 #endif

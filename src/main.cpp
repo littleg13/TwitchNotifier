@@ -8,15 +8,13 @@
 
 void createScene(ExtendedController& c, ShaderIF* particlesIF, ShaderIF* particleUpdatesIF, ShaderIF* physicsUpdatesIF)
 {
-	c.addModel(new ParticleSystem(particlesIF, particleUpdatesIF, physicsUpdatesIF, c.followers->size(), c.followers));
-	c.addModel(new FooterText(particlesIF, c.followers));
+	c.addModel(new ParticleSystem(particlesIF, particleUpdatesIF, physicsUpdatesIF, c.users->size(), c.users));
+	c.addModel(new FooterText(particlesIF, c.users));
 }
 
 void set3DViewingInformation(double overallBB[])
 {
 	ModelView::setMCRegionOfInterest(overallBB);
-
-
 	cryph::AffPoint eye, center;
 	cryph::AffVector up;
 	float center_arr[3];

@@ -9,10 +9,9 @@
 #include "TwitchConnection.h"
 #include "ChatBot.h"
 #include "Sound/SoundController.h"
+#include "DBController.h"
 
 #include <fstream>
-
-typedef std::unordered_map<std::string, Follower*> followerDict;
 
 
 class ExtendedController : public GLFWController
@@ -20,8 +19,8 @@ class ExtendedController : public GLFWController
 protected:
 	void handleMouseMotion(int x, int y);
 	void handleDisplay();
-	static void startTwitchServer(EventQueue* eventQueue);
-	static void startChatServer(EventQueue* eventQueue, followerDict* followers);
+	static void startTwitchServer(EventQueue* eventQueue, UserDict* users);
+	static void startChatServer(EventQueue* eventQueue, UserDict* users);
 	static ChatBot* chatBot;
 	static NotifyServer* notifyServer;
 	static SoundController* soundController;
@@ -30,19 +29,20 @@ protected:
 	std::thread* twitchThread;
 	std::thread* chatThread;
 	TwitchConnection* con;
+	DBController* dbController;
 public:
 	void enableTwitch();
 	ExtendedController(const std::string& name, int rcFlags = 0);
 	~ExtendedController();
 	bool drawingOpaque() const;
-	void updateFollowers(std::vector<json11::Json> follower_arr);
-	followerDict* followers;
-	int numFollowers = 0;
+	void updateUsers(User** user_arr, int n);
+	UserDict* users;
+	int numusers = 0;
 private:
 	bool drawingOpaqueObjects = false;
-	void writeFollowersToFile();
-	void readFollowersFromFile();
-	const std::string followerFile = "followers.json";
+	void saveUserDB(int userID);
+	void loadUserDB();
+	const std::string followerFile = "users.json";
 	
 };
 

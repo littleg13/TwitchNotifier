@@ -4,5 +4,6 @@
 *.lib
 *.ilk
 .vscode/
-bin/followers.json
+include/boost
+bin/users.json
 bin/dontShowOnStream.txt

@@ -1,6 +1,6 @@
 #include "FooterText.h"
 
-FooterText::FooterText(ShaderIF* sIF, followerDict* p_followers): SceneElement(sIF){
+FooterText::FooterText(ShaderIF* sIF, UserDict* p_users): SceneElement(sIF){
     font = CFont::getFont(fontFile);
     createString("");
 }
@@ -9,7 +9,7 @@ FooterText::~FooterText(){
 }
 
 void FooterText::createString(std::string msg){
-    glString = new CGLString(msg, font, 3);
+    glString = new CGLString(msg, font, 2);
     glString->setStringDimensions(10.0, 1.0);
     glString->setStringOrigin(glString->getCurrentRenderWidth() / (-2.0), -6.0, 0.0);
     double dir[3];
@@ -61,8 +61,16 @@ void FooterText::renderFooterText(cryph::Matrix4x4 M){
 bool FooterText::handleUpdate(void* update){
     updateEvent* event = reinterpret_cast<updateEvent*>(update);
 	if(event->action == updateEvent::ACTION::NEW_FOLLOWER){
-		createString("Thanks " + (*(event->info))["data"][0]["from_name"].string_value() + " for following!");
+		createString("Thanks " + event->user->name + " for following!");
         startTime = glfwGetTime();
 	}
+    else if(event->action == updateEvent::ACTION::NEW_SUBSCRIBER){
+        createString("Thanks " + event->user->name + " for subscribing!");
+        startTime = glfwGetTime();
+    }
+    else if(event->action == updateEvent::ACTION::GIFTED_SUBSCRIBER){
+        createString(event->gifter->name + " gifted a sub to " + event->user->name);
+        startTime = glfwGetTime();
+    }
     return false;
 }

@@ -10,6 +10,8 @@
 #include <synchapi.h>
 #include <stdexcept>
 #include <iostream>
+#include <limits>
+#include <sstream>
 #include <algorithm>
 #include "json11.hpp"
 
@@ -19,89 +21,83 @@ struct HTTPResponse {
     enum STATUS_CODES {
         OK = 200,
         ACCEPTED = 202,
-        SWITCHING_PROTOCOLS = 101
+        NO_CONTENT = 204,
+        SWITCHING_PROTOCOLS = 101,
+        FORBIDDEN = 403,
+        BAD_REQUEST = 400
     };
     enum HTTP_TYPE {
         GET,
         POST,
+        OPTIONS,
         RESPONSE
     };
-    std::unordered_map<std::string, std::string*> httpLookups;
-    HTTP_TYPE type;
+    static std::unordered_map<std::string, HTTP_TYPE> httpRequests;
+    std::unordered_map<std::string, std::string> headers;
+    std::unordered_map<std::string, std::string> params;
+    HTTP_TYPE type = HTTP_TYPE::RESPONSE;
     int status_code = 0;
     std::string request = "";
     std::string status_msg = "";
-    std::string date = "";
-    std::string content_type = "";
-    std::string content_length_str = "";
-    int content_length = 0;
     json11::Json jsonContent = nullptr;
     std::string content = "";
-    std::string sec_websocket_accept = "";
 
-    void fixInputs(){
-        int pos = status_msg.find(" ");
-        if(pos != std::string::npos){
-            status_code = stoi(status_msg.substr(0, pos));
-            status_msg = status_msg.substr(pos + 1, status_msg.length());
-        }
-        if((pos = content_type.find(";")) != std::string::npos){
-            content_type = content_type.substr(0, pos);
-        }
-        if(content_length_str.length() != 0)
-            content_length = stoi(content_length_str);
-        if(request.length() != 0){
-            if((pos = request.find(" HTTP")) != std::string::npos)
-                request = request.substr(0, pos);
-            if((pos = request.find("?")) != std::string::npos){
-                content = request.substr(pos + 1, request.length());
-                request =  request.substr(0, pos);
-                content_type = "application/x-www-form-urlencoded";
-                content_length = content.length();
-            }
+    HTTPResponse(std::string s, int dataLength){
+        std::stringstream ss;
+        ss.str(s);
+        std::string value;
+        ss >> value;
+        //See whether it is a request or response
+        if(httpRequests.find(value) != httpRequests.end()){
+            type = httpRequests[value];
+            ss >> request;
+            extractParams(request);
         }
         else{
-            type = HTTP_TYPE::RESPONSE;
+            ss >> status_code;
+            ss >> status_msg;
         }
-    }
-    void parseContent(){
-        if(content.length() == 0)
-            return;
-        if(content_type == "application/json"){
-            std::string err;
-            jsonContent = json11::Json::parse(content, err);
+        //Read all headers (Remove '\r' character cause windows is fucking stupid)
+        std::getline(ss.ignore(INT_MAX, '\n'), value);
+        value.pop_back();
+        while(value.size()){
+            int pos = value.find(":");
+            headers.insert({value.substr(0, pos), value.substr(pos + 2)}); // + 2 to accout for ": "
+            std::getline(ss, value);
+            value.pop_back();
         }
-        else if(content_type == "application/x-www-form-urlencoded"){
-            std::map<std::string, json11::Json> moop;
-            std::string s = content;
-            int pos = 0;
-            std::string delimiter = "&";
-            while ((pos = s.find(delimiter)) != std::string::npos) {
-                std::string token = s.substr(0, pos);
-                s.erase(0, pos + delimiter.length());
-                if((pos = token.find("=")) != std::string::npos){
-                    moop.insert({token.substr(0, pos), json11::Json(token.substr(pos + 1, token.length()))});
-                }
+        //Shove the rest into the content
+        while(!ss.eof()){
+            std::getline(ss, value);
+            content += value;
+        }
+        try{
+            if(headers["Content-Type"].find("application/json") != std::string::npos){
+                std::string err;
+                jsonContent = json11::Json::parse(content, err);
             }
-            jsonContent = json11::Json(moop);
+        } catch(std::out_of_range &e){}
+    }
+
+    void extractParams(std::string s){
+        std::size_t pos = s.find("?");
+        if(pos!=std::string::npos){
+            request = s.substr(0, pos);
+            std::string paramString = s.substr(pos + 1);
+            s.erase(0, pos + 1);
+            pos = paramString.size();
+            while(pos!=std::string::npos){
+                int eqPos = paramString.find("=");
+                params.insert({paramString.substr(0, eqPos), paramString.substr(eqPos + 1)});
+                paramString.erase(0, pos + 1);
+                pos = paramString.find("&");
+            }
         }
     }
-    HTTPResponse(){
-        httpLookups.insert({
-            {"http/1.1", &status_msg},
-            {"date:", &date},
-            {"content-type:", &content_type},
-            {"content-length:", &content_length_str},
-            {"get", &request},
-            {"post", &request},
-            {"sec-websocket-accept", &sec_websocket_accept}
-        });
-    };
 };
 
 class HTTP {
     public:
-        static HTTPResponse* parseHTTP(std::string buf, int dataLength);
         static HTTPResponse* ssl_recv(SSL* ssl, SOCKET Socket);
         static HTTPResponse* http_recv(SOCKET Socket);
         static HTTPResponse* ssl_GET(SSL* ssl, SOCKET Socket, std::string host, std::string path, std::string* headers, int numHeaders, std::string* params, int numParams);

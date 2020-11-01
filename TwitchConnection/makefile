@@ -1,9 +1,9 @@
-CPP = cl.exe /Zi /EHsc
+CPP = cl.exe
 INC = -I../include
-C_FLAGS = -c /EHsc /Zi $(INC)
+C_FLAGS = -c /MDd /EHsc /Zi $(INC)
 LINK = lib.exe
-OBJS = TwitchConnection.obj json11.obj NotifyServer.obj HTTP.obj ChatBot.obj Commands.obj EventQueue.obj
-LOCAL_UTIL_LIBRARIES = crypt32.lib Rpcrt4.lib Advapi32.lib Ole32.lib User32.lib ../lib/libsslMT.lib ../lib/libcryptoMT.lib Ws2_32.lib 
+OBJS = TwitchConnection.obj json11.obj NotifyServer.obj HTTP.obj ChatBot.obj Commands.obj EventQueue.obj WebSocket.obj
+LOCAL_UTIL_LIBRARIES = crypt32.lib Rpcrt4.lib Advapi32.lib Ole32.lib User32.lib ../lib/libssl.lib ../lib/libcrypto.lib Ws2_32.lib 
 
 libTwitch.lib: $(OBJS) 
 	$(LINK) /OUT:libTwitch.lib $(OBJS) $(LOCAL_UTIL_LIBRARIES)
@@ -14,6 +14,8 @@ NotifyServer.obj: NotifyServer.cpp
 	$(CPP) $(C_FLAGS) NotifyServer.cpp
 ChatBot.obj: ChatBot.cpp ChatBot.h
 	$(CPP) $(C_FLAGS) ChatBot.cpp
+WebSocket.obj: WebSocket.cpp WebSocket.h
+	$(CPP) $(C_FLAGS) WebSocket.cpp
 HTTP.obj: HTTP.cpp HTTP.h
 	$(CPP) $(C_FLAGS) HTTP.cpp
 Commands.obj: Commands.cpp Commands.h

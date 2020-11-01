@@ -7,7 +7,7 @@
 
 #include "ParticleSystem.h"
 
-ParticleSystem::ParticleSystem(ShaderIF* sIF, ShaderIF* particleUpdatesIF, ShaderIF* physicsUpdatesIF, int n_par, followerDict* p_followers) : SceneElement(sIF), particleUpdatesIF(particleUpdatesIF), physicsUpdatesIF(physicsUpdatesIF), n_active_particles(n_par), followers(p_followers)
+ParticleSystem::ParticleSystem(ShaderIF* sIF, ShaderIF* particleUpdatesIF, ShaderIF* physicsUpdatesIF, int n_par, UserDict* p_users) : SceneElement(sIF), particleUpdatesIF(particleUpdatesIF), physicsUpdatesIF(physicsUpdatesIF), n_active_particles(n_par), users(p_users)
 {
 	initParticles();
 }
@@ -38,17 +38,19 @@ bool ParticleSystem::handleCommand(unsigned char anASCIIChar, double ldsX, doubl
 
 bool ParticleSystem::handleUpdate(void* update){
 	updateEvent* event = reinterpret_cast<updateEvent*>(update);
-	if(event->action == updateEvent::ACTION::NEW_FOLLOWER){
-		n_active_particles = followers->size();
+	User* user = event->user;
+	if(event->action == updateEvent::ACTION::NEW_FOLLOWER ||
+	   event->action == updateEvent::ACTION::NEW_SUBSCRIBER ||
+	   event->action == updateEvent::ACTION::GIFTED_SUBSCRIBER){
+		n_active_particles = users->size();
 	}
 	else if(event->action == updateEvent::ACTION::CHANGE_COLOR){
-		Follower* follower = (*followers)[(*(event->info))["user"].string_value()];
-		renderElements[follower->index]->setColor(follower->color);
+		
+		renderElements[user->index]->setColor(user->color);
 	}
 	else if(event->action == updateEvent::ACTION::CHANGE_SHAPE){
-		Follower* follower = (*followers)[(*(event->info))["user"].string_value()];
-		changeShape(follower->index, follower->shape);
-		renderElements[follower->index]->setColor(follower->color);
+		changeShape(user->index, user->shape);
+		renderElements[user->index]->setColor(user->color);
 	}
 	return false;
 }
@@ -100,7 +102,7 @@ void ParticleSystem::initParticles(){
 	renderElements = new MeshParticle*[n_particles];
 	loadMeshes(vertices);
 	std::string* shapes = new std::string[n_particles];
-	for(auto it = followers->begin(); it != followers->end(); ++it){
+	for(auto it = users->begin(); it != users->end(); ++it){
 		shapes[it->second->index] = it->second->shape;
 	}
 	for(int i=0;i<n_particles;i++){
@@ -148,7 +150,7 @@ void ParticleSystem::initParticles(){
 		randomVector = orbitDirection.cross(posVector);
 		randomVector.vComponents(particles[i].rotAxis);
 	}
-	for(auto it = followers->begin(); it != followers->end(); ++it){
+	for(auto it = users->begin(); it != users->end(); ++it){
 		if(it->second->hasColor){
 			renderElements[it->second->index]->setColor(it->second->color);
 		}

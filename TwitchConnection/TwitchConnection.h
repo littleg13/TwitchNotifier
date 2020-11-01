@@ -9,7 +9,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include "HTTP.h"
-#include "Follower.hpp"
+#include "user.hpp"
 #include <vector>
 
 #include <fstream>
@@ -22,11 +22,14 @@ public:
     void closeConnection();
     HTTPResponse* post(std::string host, std::string path, std::string* headers, int numHeaders, std::string* params, int numParams);
     HTTPResponse* get(std::string host, std::string path, std::string* headers, int numHeaders, std::string* params, int numParams);
-    
+    SOCKET acceptIncomingConnection(std::string port);
     void getOauthToken();
     std::string getAuthToken();
     void subscribeToFollower();
-    std::vector<json11::Json> getFollowers();
+    void subscribeToSubscriber();
+    void getUsers(std::vector<User*>* user_arr);
+    void getFollowers(std::vector<User*>* user_arr);
+    void getSubscribers(std::vector<User*>* user_arr);
 
 private:
     WSADATA wsaData;
@@ -38,7 +41,7 @@ private:
     bool conEstablished = false;
     SSL_CTX *ctx;
     SSL *ssl;
-
+    struct addrinfo* addrInfo = NULL;
     std::string OauthToken;
     std::string tokenType;
 

@@ -1,20 +1,25 @@
 #ifndef EVENTQUEUE_H
 #define EVENTQUEUE_H
 #include <mutex>
-#include "json11.hpp"
+#include "User.hpp"
 
 struct updateEvent {
     enum ACTION {
         NEW_FOLLOWER,
         CHANGE_COLOR,
         CHANGE_SHAPE,
+        NEW_SUBSCRIBER,
+        GIFTED_SUBSCRIBER,
         NONE
     };
     ACTION action = NONE;
-    json11::Json* info;
-    void reset(){
-        action = NONE;
-        info = nullptr;
+    User* user = nullptr;
+    User* gifter = nullptr;
+    ~updateEvent(){
+        if(user)
+            delete user;
+        if(gifter)
+            delete gifter;
     }
 };
 

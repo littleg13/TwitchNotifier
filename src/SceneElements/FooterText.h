@@ -1,8 +1,6 @@
 #ifndef FOOTERTEXT_H
 #define FOOTERTEXT_H
 
-#include <math.h>
-
 #include "SceneElement.h"
 #include "GLFWController.h"
 #include "CFont.h"
@@ -10,7 +8,7 @@
 
 class FooterText : public SceneElement {
 public:
-    FooterText(ShaderIF* sIF, followerDict* p_followers);
+    FooterText(ShaderIF* sIF, UserDict* p_users);
 	virtual ~FooterText();
 	void getMCBoundingBox(double* xyzLimits) const;
 	bool handleCommand(unsigned char anASCIIChar, double ldsX, double ldsY);
@@ -24,7 +22,7 @@ private:
     float textTimeout = 4.0;
     CFont* font;
     CGLString* glString;
-    std::string fontFile = "fonts/ComicSansRegular24.fnt";
+    std::string fontFile = "fonts/AlbertusMedium12.fnt";
 
 };
 #endif

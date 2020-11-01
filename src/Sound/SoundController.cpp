@@ -1,7 +1,7 @@
 #include "SoundController.h"
 
 ALuint SoundController::sources[1];
-ALuint SoundController::buffers[1];
+ALuint SoundController::buffers[2];
 std::mutex SoundController::soundQueueMux;
 Semaphore SoundController::soundSem;
 
@@ -36,15 +36,16 @@ void SoundController::initSources(){
 }
 
 void SoundController::initBuffers(){
-    alGenBuffers(1, buffers);
+    alGenBuffers(2, buffers);
     g_pWaveLoader = new CWaves();
 
     ALFWLoadWaveToBuffer(NEW_FOLLOWER_FILE, buffers[0]);
+    ALFWLoadWaveToBuffer(NEW_SUBSCRIBER_FILE, buffers[1]);
 }
 
 SoundController::~SoundController(){
     alDeleteSources(1, sources);
-    alDeleteBuffers(1, buffers);
+    alDeleteBuffers(2, buffers);
     device = alcGetContextsDevice(context);
     alcMakeContextCurrent(NULL);
     alcDestroyContext(context);
@@ -54,10 +55,16 @@ SoundController::~SoundController(){
 void SoundController::processEvent(updateEvent* event){
     if(event->action != updateEvent::ACTION::NONE){
         if(event->action == updateEvent::ACTION::NEW_FOLLOWER){
-           soundQueueMux.lock();
-           soundQueue->push(SOUNDS::NEW_FOLLOWER);
-           soundQueueMux.unlock();
-           soundSem.release();
+            soundQueueMux.lock();
+            soundQueue->push(SOUNDS::NEW_FOLLOWER);
+            soundQueueMux.unlock();
+            soundSem.release();
+        }
+        else if(event->action == updateEvent::ACTION::NEW_SUBSCRIBER || event->action == updateEvent::ACTION::GIFTED_SUBSCRIBER){
+            soundQueueMux.lock();
+            soundQueue->push(SOUNDS::NEW_SUBSCRIBER);
+            soundQueueMux.unlock();
+            soundSem.release();
         }
     }
 }
